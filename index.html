@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NiMA</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+font-family:Arial,Helvetica,sans-serif;
+background:
+radial-gradient(circle at top left,#111827,#020617 55%),
+linear-gradient(135deg,#0f172a,#020617);
+color:#fff;
+padding:18px;
+}
+
+/* TOP */
+.topbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:12px;
+flex-wrap:wrap;
+padding:14px 18px;
+margin-bottom:16px;
+border-radius:0;
+background:rgba(30,41,59,.62);
+backdrop-filter:blur(14px);
+border:1px solid rgba(255,255,255,.18);
+box-shadow:0 10px 25px rgba(0,0,0,.28);
+}
+
+.title{
+font-size:34px;
+font-weight:900;
+background:linear-gradient(90deg,#38bdf8,#22c55e,#facc15);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+.header-right{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+}
+
+.header-box{
+padding:8px 12px;
+border-radius:0;
+background:rgba(15,23,42,.85);
+border:1px solid rgba(255,255,255,.12);
+font-size:14px;
+}
+
+/* MAIN */
+.main-layout{
+display:grid;
+grid-template-columns:44% 56%;
+gap:16px;
+align-items:start;
+margin-bottom:18px;
+}
+
+/* LEFT */
+.cards{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:12px;
+align-content:start;
+}
+
+.card{
+padding:14px;
+border-radius:0;
+background:linear-gradient(145deg,rgba(30,41,59,.72),rgba(15,23,42,.72));
+backdrop-filter:blur(16px);
+
+border:1.5px solid rgba(255,255,255,.95);
+
+box-shadow:
+0 10px 28px rgba(0,0,0,.35),
+0 0 0 1px rgba(255,255,255,.15);
+
+min-height:118px;
+}
+
+.card h3{
+font-size:14px;
+margin-bottom:8px;
+letter-spacing:.4px;
+color:#7dd3fc;
+}
+
+.big{
+font-size:24px;
+font-weight:900;
+line-height:1.2;
+}
+
+.small{
+font-size:14px;
+line-height:1.4;
+margin-top:4px;
+color:#d1d5db;
+}
+
+.up{color:#22c55e;font-weight:800}
+.down{color:#ef4444;font-weight:800}
+.strong{color:#facc15;font-weight:800}
+.neutral{color:#9ca3af;font-weight:800}
+
+/* OI CARD */
+#oi_card{
+grid-column:span 2;
+min-height:230px;
+}
+
+.meter-block{margin-bottom:14px}
+
+.meter-top{
+display:flex;
+justify-content:space-between;
+font-size:14px;
+margin-bottom:5px;
+}
+
+.meter-bar{
+height:10px;
+border-radius:0;
+background:rgba(255,255,255,.08);
+overflow:hidden;
+}
+
+.meter-fill{
+height:100%;
+width:0%;
+border-radius:0;
+transition:width .4s ease;
+}
+
+.green{background:linear-gradient(90deg,#16a34a,#22c55e)}
+.red{background:linear-gradient(90deg,#dc2626,#ef4444)}
+
+.bias-row{
+display:flex;
+justify-content:space-between;
+padding-top:10px;
+margin-top:10px;
+border-top:1px solid rgba(255,255,255,.08);
+font-size:15px;
+font-weight:800;
+}
+
+#trade_signal{
+font-weight:900;
+font-size:18px;
+}
+
+/* LADDER */
+#ladder_card{
+height:100%;
+min-height:230px;
+display:flex;
+flex-direction:column;
+}
+
+#ladder_box{
+display:flex;
+flex-direction:column;
+gap:8px;
+margin-top:8px;
+}
+
+.level-row{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:8px 10px;
+border-radius:0;
+font-size:14px;
+font-weight:800;
+}
+
+.res-row{
+background:rgba(239,68,68,.18);
+color:#fca5a5;
+}
+
+.sup-row{
+background:rgba(34,197,94,.18);
+color:#86efac;
+}
+
+.spot-row{
+background:rgba(255, 255, 255, 0.9);
+border:1px solid rgba(0, 0, 0, 0.95);
+font-size:18px;
+font-weight:900;
+color:#000000;
+}
+
+/* RIGHT CHARTS */
+.chart-panel{
+margin-bottom:18px;
+}
+
+.full-chart-row{
+width:100%;
+}
+.chart-wide{grid-column:1 / span 2}
+
+.chart-box{
+height:420px;
+
+padding:12px;
+border-radius:0;
+
+background:linear-gradient(145deg,rgba(30,41,59,.72),rgba(15,23,42,.72));
+backdrop-filter:blur(16px);
+
+border:2px solid rgba(255,255,255,.95);
+
+box-shadow:
+0 10px 28px rgba(0,0,0,.35),
+0 0 0 1px rgba(255,255,255,.15);
+}
+.chart-box canvas{
+width:100%!important;
+height:100%!important;
+}
+
+@media(max-width:1100px){
+.chart-right-align{
+width:100%;
+}
+}
+
+/* TABLE */
+table{
+width:100%;
+border-collapse:separate;
+border-spacing:0;
+overflow:hidden;
+border-radius:0;
+margin-top:18px;
+background:linear-gradient(145deg,rgba(30,41,59,.84),rgba(15,23,42,.84));
+border:1px solid rgba(255,255,255,.18);
+box-shadow:0 12px 30px rgba(0,0,0,.35);
+}
+
+th{
+padding:10px 8px;
+font-size:12px;
+font-weight:800;
+background:linear-gradient(180deg,#1e293b,#0f172a);
+border-bottom:1px solid rgba(255,255,255,.14);
+}
+
+td{
+padding:8px 6px;
+font-size:12px;
+text-align:center;
+border-bottom:1px solid rgba(255,255,255,.05);
+color:#e5e7eb;
+}
+
+tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+tr:hover td{background:rgba(56,189,248,.08)}
+
+.atm td{
+background:linear-gradient(90deg,rgba(250,204,21,.20),rgba(250,204,21,.06))!important;
+color:#fde68a!important;
+font-weight:900;
+}
+
+.right-panel{
+display:flex;
+flex-direction:column;
+height:100%;
+}
+
+/* MOBILE */
+@media(max-width:1100px){
+.main-layout{grid-template-columns:1fr}
+.chart-panel{position:static}
+}
+
+@media(max-width:700px){
+.cards{grid-template-columns:1fr}
+#oi_card,#ladder_card{grid-column:auto}
+.chart-panel{
+grid-template-columns:1fr;
+grid-template-rows:420px;
+}
+.chart-wide{grid-column:auto}
+.title{font-size:24px}
+body{padding:10px}
+table{
+display:block;
+overflow-x:auto;
+white-space:nowrap;
+}
+}
+
+#net_status_banner{
+position:fixed;
+top:14px;
+left:50%;
+transform:translateX(-50%);
+z-index:9999;
+padding:10px 18px;
+border-radius:0;
+background:#dc2626;
+color:#fff;
+font-weight:800;
+font-size:14px;
+box-shadow:0 10px 25px rgba(0,0,0,.35);
+display:none;
+animation:pulseNet 1s infinite alternate;
+}
+
+@keyframes pulseNet{
+from{opacity:.75}
+to{opacity:1}
+}
+
+.export-btn{
+display:flex;
+align-items:center;
+gap:8px;
+padding:8px 14px;
+text-decoration:none;
+color:#ffffff;
+font-size:14px;
+font-weight:800;
+letter-spacing:.3px;
+
+background:linear-gradient(135deg,#0ea5e9,#2563eb);
+border:1px solid rgba(255,255,255,.18);
+border-radius:0;
+
+box-shadow:
+0 8px 18px rgba(37,99,235,.35),
+inset 0 1px 0 rgba(255,255,255,.18);
+
+transition:all .18s ease;
+cursor:pointer;
+}
+
+.export-btn:hover{
+transform:translateY(-1px);
+box-shadow:
+0 12px 22px rgba(37,99,235,.45),
+inset 0 1px 0 rgba(255,255,255,.25);
+filter:brightness(1.05);
+}
+
+.export-btn:active{
+transform:translateY(0);
+}
+
+.export-btn span:first-child{
+font-size:16px;
+font-weight:900;
+}
+
+.chart-right-align{
+width:100%;
+margin-left:auto;
+}
+
+#ladder_smart_strip{
+margin-top:10px;
+display:grid;
+grid-template-columns:2fr 1fr 1fr 1.4fr;
+grid-template-rows:auto auto;
+gap:4px;
+padding-top:8px;
+border-top:1px solid rgba(255,255,255,.08);
+font-size:12px;
+text-align:center;
+align-items:center;
+}
+
+.smart-head{
+font-weight:800;
+color:#94a3b8;
+padding:2px 4px;
+}
+
+#ladder_smart_strip div{
+padding:4px;
+}
+
+#smart_level,
+#smart_conf,
+#smart_break,
+#smart_action{
+font-weight:900;
+color:#fff;
+}
+
+#smart_level{
+line-height:1.15;
+font-size:11px;
+}
+
+#smart_level b{
+font-size:13px;
+}
+
+</style>
+</head>
+
+<body>
+<div id="net_status_banner">
+⚠ No Internet Connectivity
+</div>
+
+<div class="topbar">
+<div class="title">NIFTY MAGIC ANALYSER ( NiMA )</div>
+
+<div class="header-right">
+<div class="header-box">Expiry: <span id="header_expiry">-</span></div>
+<div class="header-box">Updated: <span id="header_updated">-</span></div>
+<div class="header-box">ATM: <span id="header_atm">-</span></div>
+<a href="/api/export_csv" target="_blank" class="export-btn">
+<span>⬇</span>
+<span>EXPORT DATA</span>
+</a></div>
+</div>
+
+
+<div class="main-layout">
+
+<!-- LEFT HALF -->
+<div class="cards">
+
+<div class="card">
+<h3>RESISTANCE</h3>
+<div class="big" id="resistance">-</div>
+<div class="small" id="resistance_type">-</div>
+<div class="small" id="resistance_tendency">-</div>
+</div>
+
+<div class="card">
+<h3>SPOT</h3>
+<div class="big" id="spot">-</div>
+<div class="small strong" id="spot_distance">-</div>
+<div class="small" id="max_pain_box">Max Pain: -</div>
+</div>
+
+<div class="card">
+<h3>SUPPORT</h3>
+<div class="big" id="support">-</div>
+<div class="small" id="support_type">-</div>
+<div class="small" id="support_tendency">-</div>
+</div>
+
+<div class="card">
+<h3>PCR METRICS</h3>
+
+<div class="small">
+Market PCR:
+<span id="market_pcr">-</span>
+<span id="market_pcr_trend" class="strong"></span>
+</div>
+
+<div class="small">ATM PCR: <span id="atm_pcr">-</span></div>
+
+<div class="small" style="margin-top:10px;">
+Signal:
+<span id="trade_signal">WAIT</span>
+</div>
+
+<div class="small">
+Enter:
+<span id="trade_entry">-</span>
+</div>
+
+<div class="small">
+Target:
+<span id="trade_target">-</span>
+</div>
+
+<div class="small">
+Range:
+<span id="trade_range">-</span>
+</div>
+
+</div>
+
+<div class="card" id="oi_card">
+<h3>OI TRENDS</h3>
+
+<div class="meter-block">
+<div class="meter-top">
+<span>Put Writers</span>
+<span>
+<span id="put_writers_percent">-</span>
+<span id="put_writers_trend" class="strong"></span>
+</span>
+</div>
+<div class="meter-bar">
+<div class="meter-fill green" id="put_writers_bar"></div>
+</div>
+</div>
+
+<div class="meter-block">
+<div class="meter-top">
+<span>Call Writers</span>
+<span>
+<span id="call_writers_percent">-</span>
+<span id="call_writers_trend" class="strong"></span>
+</span>
+</div>
+<div class="meter-bar">
+<div class="meter-fill red" id="call_writers_bar"></div>
+</div>
+</div>
+
+<div class="bias-row">
+<span>Bias:</span>
+<span id="net_bias">-</span>
+</div>
+
+<div class="small" style="margin-top:8px;">
+Strength:
+<span id="bias_strength">-</span>%
+</div>
+
+<div class="small" id="trade_mode_box" style="margin-top:6px;">
+MODE: -
+</div>
+
+<div class="small" id="spot_confirm_box" style="margin-top:6px;">
+CONFIRM: -
+</div>
+
+<div class="small strong" id="entry_conf_box" style="margin-top:6px;">
+ENTRY CONF: -
+</div>
+
+<div class="small" id="bias_flip_msg"></div>
+
+</div>
+</div>
+
+<!-- RIGHT HALF -->
+<div class="right-panel">
+
+<div class="card" id="ladder_card">
+<h3>LIVE SPOT LEVEL</h3>
+
+<div id="ladder_box"></div>
+
+<div id="ladder_smart_strip">
+
+<div class="smart-head">CRITICAL-LEVEL</div>
+<div class="smart-head">CONFIDENCE</div>
+<div class="smart-head" id="smart_break_head">BREAK %</div>
+<div class="smart-head">ACTION</div>
+
+<div id="smart_level">-</div>
+<div id="smart_conf">-</div>
+<div id="smart_break">-</div>
+<div id="smart_action">-</div>
+
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- END MAIN LAYOUT -->
+
+<!-- FULL WIDTH CHART -->
+<div class="chart-panel chart-right-align">
+<div class="chart-box">
+<canvas id="chart1"></canvas>
+</div>
+</div>
+
+
+<!-- TABLE -->
+<table>
+<thead>
+<tr>
+<th>CE LTP</th>
+<th>CE IV</th>
+<th>CE EXT</th>
+<th>CE Δ</th>
+<th>CE CHG OI</th>
+<th>CE VOL</th>
+<th>CE OI</th>
+<th>STRIKE</th>
+<th>PE OI</th>
+<th>PE VOL</th>
+<th>PE CHG OI</th>
+<th>PE Δ</th>
+<th>PE EXT</th>
+<th>PE IV</th>
+<th>PE LTP</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+
+<br>
+
+<table>
+<thead>
+<tr>
+<th>SIGNAL</th>
+<th>DATE</th>
+<th>TIME</th>
+</tr>
+</thead>
+<tbody id="signal_tbody"></tbody>
+</table>
+
+
+<script>
+
+async function loadSignals(){
+
+const res = await fetch("/api/signals");
+const rows = await res.json();
+
+let html = "";
+
+rows.forEach(r=>{
+
+let cls = "strong";
+
+if(r.signal==="CALL") cls="up";
+if(r.signal==="PUT") cls="down";
+
+html += `
+<tr>
+<td class="${cls}">${r.signal}</td>
+<td>${r.trade_date}</td>
+<td>${r.trade_time}</td>
+</tr>
+`;
+
+});
+
+signal_tbody.innerHTML = html;
+}
+
+
+Chart.register(ChartDataLabels);
+
+let chart1;
+let labels=[];
+
+let spotData=[],eorData=[],eosData=[];
+let yHighData=[],yLowData=[];
+let eorPlus1Data=[],eorMinus1Data=[];
+let eosPlus1Data=[],eosMinus1Data=[];
+let putSellerData=[],callWritersData=[],marketPcrData=[];
+let isOffline = false;
+let prevBias = null;
+let flipTime = null;
+let flipFrom = "";
+
+function buildLabels(){
+
+labels=[];
+
+let h=9,m=18;
+
+while(h<16 || (h===16 && m===0)){
+
+labels.push(
+String(h).padStart(2,"0")+":"+
+String(m).padStart(2,"0")
+);
+
+m++;
+if(m>=60){h++;m=0;}
+
+}
+
+spotData=Array(labels.length).fill(null);
+eorData=Array(labels.length).fill(null);
+eosData=Array(labels.length).fill(null);
+yHighData=Array(labels.length).fill(null);
+yLowData=Array(labels.length).fill(null);
+
+eorPlus1Data=Array(labels.length).fill(null);
+eorMinus1Data=Array(labels.length).fill(null);
+
+eosPlus1Data=Array(labels.length).fill(null);
+eosMinus1Data=Array(labels.length).fill(null);
+
+putSellerData=Array(labels.length).fill(null);
+callWritersData=Array(labels.length).fill(null);
+marketPcrData=Array(labels.length).fill(null);
+}
+
+function lastValidIndex(arr){
+for(let i=arr.length-1;i>=0;i--){
+if(arr[i]!=null)return i;
+}
+return -1;
+}
+
+function initChart1(){
+
+chart1 = new Chart(document.getElementById("chart1"),{
+type:"line",
+
+data:{
+labels:labels,
+
+datasets:[
+
+/* SPOT */
+{
+data:spotData,
+borderColor:"#ffffff",
+borderWidth:2.5,
+pointRadius:0,
+tension:0,
+datalabels:{
+align:"right",
+anchor:"end",
+clip:false,
+color:"#ffffff",
+font:{size:18,weight:"bold"},
+textStrokeColor:"#000",
+textStrokeWidth:2,
+formatter:(v,c)=>
+c.dataIndex===lastValidIndex(spotData)&&v!=null?v:""
+}
+},
+
+/* RESISTANCE */
+{
+data:eorData,
+borderColor:"#ef4444",
+borderWidth:2.5,
+pointRadius:0,
+tension:0,
+datalabels:{
+align:"right",
+anchor:"end",
+clip:false,
+color:"#ef4444",
+font:{size:16,weight:"bold"},
+textStrokeColor:"#000",
+textStrokeWidth:2,
+formatter:(v,c)=>
+c.dataIndex===lastValidIndex(eorData)&&v!=null?v:""
+}
+},
+
+/* SUPPORT */
+{
+data:eosData,
+borderColor:"#22c55e",
+borderWidth:2.5,
+pointRadius:0,
+tension:0,
+datalabels:{
+align:"right",
+anchor:"end",
+clip:false,
+color:"#22c55e",
+font:{size:16,weight:"bold"},
+textStrokeColor:"#000",
+textStrokeWidth:2,
+formatter:(v,c)=>
+c.dataIndex===lastValidIndex(eosData)&&v!=null?v:""
+}
+},
+
+/* YESTERDAY HIGH */
+{
+data:yHighData,
+borderColor:"rgba(255,255,0,0.65)",
+borderWidth:2.5,
+pointRadius:0,
+fill:false,
+tension:0,
+datalabels:{
+display:true,
+align:"right",
+anchor:"end",
+offset:8,
+clip:false,
+color:"yellow",
+font:{size:12,weight:"bold"},
+formatter:(v,c)=>
+c.dataIndex===lastValidIndex(yHighData)&&v!=null
+? "Y HIGH " + v
+: ""
+}
+},
+
+/* YESTERDAY LOW */
+{
+data:yLowData,
+borderColor:"rgba(96,165,250,0.65)",
+borderWidth:2.5,
+pointRadius:0,
+fill:false,
+tension:0,
+datalabels:{
+display:true,
+align:"right",
+anchor:"end",
+offset:8,
+clip:false,
+color:"#60a5fa",
+font:{size:12,weight:"bold"},
+formatter:(v,c)=>
+c.dataIndex===lastValidIndex(yLowData)&&v!=null
+? "Y LOW " + v
+: ""
+}
+},
+
+/* EOR +1 */
+{
+data:eorPlus1Data,
+borderColor:"#ef4444",
+borderWidth:1.2,
+borderDash:[6,6],
+pointRadius:0,
+tension:0,
+datalabels:{display:false}
+},
+
+/* EOR -1 */
+{
+data:eorMinus1Data,
+borderColor:"#ef4444",
+borderWidth:0.9,
+borderDash:[5,5],
+pointRadius:0,
+tension:0,
+datalabels:{display:false}
+},
+
+/* EOS +1 */
+{
+data:eosPlus1Data,
+borderColor:"#22c55e",
+borderWidth:0.9,
+borderDash:[5,5],
+pointRadius:0,
+tension:0,
+datalabels:{display:false}
+},
+
+/* EOS -1 */
+{
+data:eosMinus1Data,
+borderColor:"#22c55e",
+borderWidth:1.2,
+borderDash:[6,6],
+pointRadius:0,
+tension:0,
+datalabels:{display:false}
+}
+
+]
+},
+
+options:{
+responsive:true,
+maintainAspectRatio:false,
+animation:false,
+spanGaps:true,
+
+plugins:{
+legend:{display:false},
+
+title:{
+display:true,
+text:"LIVE NIFTY • Spot / Support / Resistance",
+color:"#ffffff",
+font:{size:18,weight:"bold"},
+padding:{bottom:10}
+}
+},
+
+interaction:{
+intersect:false,
+mode:"index"
+}
+}
+
+});
+
+}
+
+function updateCharts(data){
+
+const now=new Date();
+
+const label=
+String(now.getHours()).padStart(2,"0")+":"+
+String(now.getMinutes()).padStart(2,"0");
+
+let idx = labels.indexOf(label);
+
+/* if outside label range, use last slot */
+if(idx===-1){
+    idx = labels.length - 1;
+}
+
+spotData[idx]=Number(data.spot);
+eorData[idx]=Number(data.eor);
+eosData[idx]=Number(data.eos);
+
+eorPlus1Data.fill(Number(data.eor_plus_1));
+eorMinus1Data.fill(Number(data.eor_minus_1));
+eosPlus1Data.fill(Number(data.eos_plus_1));
+eosMinus1Data.fill(Number(data.eos_minus_1));
+
+if(data.y_high && Number(data.y_high) > 1000) yHighData.fill(Number(data.y_high));
+if(data.y_low && Number(data.y_low) > 1000) yLowData.fill(Number(data.y_low));
+
+chart1.data.datasets[3].data = yHighData;
+chart1.data.datasets[4].data = yLowData;
+
+chart1.data.datasets[5].data = eorPlus1Data;
+chart1.data.datasets[6].data = eorMinus1Data;
+chart1.data.datasets[7].data = eosPlus1Data;
+chart1.data.datasets[8].data = eosMinus1Data;
+
+
+putSellerData[idx]=Number(data.put_writers_percent);
+callWritersData[idx]=Number(data.call_writers_percent);
+marketPcrData[idx]=Number(data.market_pcr);
+
+const dayHigh = Number(data.day_high || data.spot || 0);
+const dayLow  = Number(data.day_low  || data.spot || 0);
+
+let topVals = [
+dayHigh,
+Number(data.eor_plus_1 || 0)
+];
+
+if(data.y_high != null){
+    topVals.push(Number(data.y_high) + 30);
+}
+
+let lowVals = [
+dayLow,
+Number(data.eos_minus_1 || 999999)
+];
+
+if(data.y_low != null){
+    lowVals.push(Number(data.y_low) - 30);
+}
+
+const ymax = Math.max(...topVals) + 100;
+const ymin = Math.min(...lowVals) - 100;
+
+chart1.options.scales.y = {
+min:ymin,
+max:ymax
+};
+
+chart1.update();
+}
+
+async function loadHistory(){
+ const res = await fetch('/api/history');
+ const rows = await res.json();
+ rows.forEach(r=>{
+   const idx = labels.indexOf(r.trade_time);
+   if(idx===-1) return;
+   spotData[idx]=Number(r.spot);
+   eorData[idx]=Number(r.eor);
+   eosData[idx]=Number(r.eos);
+   eorPlus1Data[idx]=Number(r.eor_plus_1);
+   eorMinus1Data[idx]=Number(r.eor_minus_1);
+   eosPlus1Data[idx]=Number(r.eos_plus_1);
+   eosMinus1Data[idx]=Number(r.eos_minus_1);
+   marketPcrData[idx]=Number(r.market_pcr);
+   putSellerData[idx]=Number(r.put_writers);
+   callWritersData[idx]=Number(r.call_writers);
+ });
+ chart1.update();
+}
+
+async function loadData(){
+
+try{
+
+const res=await fetch("/api/data");
+const data=await res.json();
+/* network restored */
+lastGoodDataTime = new Date();
+
+if(isOffline){
+    isOffline = false;
+    net_status_banner.style.display = "none";
+}
+
+/* HEADER */
+header_expiry.innerText=data.expiry??"-";
+header_updated.innerText=data.updated??"-";
+header_atm.innerText=data.atm??"-";
+
+/* SPOT */
+spot.innerText=data.spot??"-";
+
+const sp=Number(data.spot||0);
+
+const levels=[
+{value:Number(data.eor_plus_1),name:"UPPER RESISTANCE"},
+{value:Number(data.eor),name:"RESISTANCE"},
+{value:Number(data.eor_minus_1),name:"LOWER RESISTANCE"},
+{value:Number(data.eos_plus_1),name:"UPPER SUPPORT"},
+{value:Number(data.eos),name:"SUPPORT"},
+{value:Number(data.eos_minus_1),name:"LOWER SUPPORT"}
+];
+
+let nearest=null,minDist=Infinity;
+
+levels.forEach(l=>{
+const d=Math.abs(sp-l.value);
+if(d<minDist){minDist=d;nearest=l;}
+});
+
+if(nearest){
+const diff=Math.round(Math.abs(sp-nearest.value));
+
+if(sp>nearest.value){
+spot_distance.className="small up";
+spot_distance.innerText="SPOT "+diff+" ABOVE "+nearest.name;
+}else if(sp<nearest.value){
+spot_distance.className="small down";
+spot_distance.innerText="SPOT "+diff+" BELOW "+nearest.name;
+}else{
+spot_distance.className="small strong";
+spot_distance.innerText="SPOT AT "+nearest.name;
+}
+}
+
+max_pain_box.innerText="Max Pain: "+(data.max_pain??"-");
+
+/* PCR */
+market_pcr.innerText=data.market_pcr??"-";
+market_pcr_trend.innerText = ` (${data.market_pcr_delta>=0?'+':''}${data.market_pcr_delta || 0}%)`;
+market_pcr_trend.className = data.market_pcr_delta>0 ? 'up' : data.market_pcr_delta<0 ? 'down' : 'strong';
+
+atm_pcr.innerText=data.atm_pcr??"-";
+document.getElementById("trade_signal").innerText =
+data.trade_signal ?? "WAIT";
+
+document.getElementById("trade_entry").innerText =
+data.trade_entry ?? "-";
+
+document.getElementById("trade_target").innerText =
+data.trade_target ?? "-";
+
+document.getElementById("trade_range").innerText =
+data.trade_range ?? "-";
+
+trade_signal.className = "";
+
+if(data.trade_signal === "CALL"){
+trade_signal.className = "up";
+}
+else if(data.trade_signal === "PUT"){
+trade_signal.className = "down";
+}
+else{
+trade_signal.className = "strong";
+}
+
+
+/* SUPPORT */
+support.innerHTML =
+(data.eos ?? "-") +
+"<div style='font-size:16px;color:#cbd5e1;margin-top:4px;'>( " +
+(data.support ?? "-") +
+" )</div>";
+
+support_type.innerText =
+data.support_type ?? "-";
+
+let st = "> " + (data.support_tendency ?? "-") + " | ";
+
+const sStrike = Number(data.support ?? 0);
+
+const soiStrike = Number(data.support_second_oi_strike ?? 0);
+const svolStrike = Number(data.support_second_vol_strike ?? 0);
+
+const soiPct = Number(data.support_oi_pct ?? 0);
+const svolPct = Number(data.support_vol_pct ?? 0);
+
+const sType = data.support_type ?? "";
+const sTen  = data.support_tendency ?? "";
+
+if(sType === "OI"){
+    st += `${soiStrike} (${soiPct}%)`;
+}
+
+else if(sType === "VOL"){
+    st += `${svolStrike} (${svolPct}%)`;
+}
+
+else if(sType === "Both OI VOL"){
+
+    /* STRONG:
+       show strike having LOWER percent
+    */
+    if(sTen === "STRONG"){
+
+        if(soiPct <= svolPct){
+            st += `${soiStrike} (${soiPct}%)`;
+        }else{
+            st += `${svolStrike} (${svolPct}%)`;
+        }
+    }
+
+    /* UP:
+       show only strike ABOVE support
+       choose higher %
+    */
+    else if(sTen === "UP"){
+
+        let picks = [];
+
+        if(soiStrike > sStrike) picks.push({s:soiStrike,p:soiPct});
+        if(svolStrike > sStrike) picks.push({s:svolStrike,p:svolPct});
+
+        if(picks.length){
+            picks.sort((a,b)=>b.p-a.p);
+            st += `${picks[0].s} (${picks[0].p}%)`;
+        }else{
+            st += `${Math.max(soiStrike,svolStrike)} (${Math.max(soiPct,svolPct)}%)`;
+        }
+    }
+
+    /* DOWN:
+       show only strike BELOW support
+       choose higher %
+    */
+    else if(sTen === "DOWN"){
+
+        let picks = [];
+
+        if(soiStrike < sStrike) picks.push({s:soiStrike,p:soiPct});
+        if(svolStrike < sStrike) picks.push({s:svolStrike,p:svolPct});
+
+        if(picks.length){
+            picks.sort((a,b)=>b.p-a.p);
+            st += `${picks[0].s} (${picks[0].p}%)`;
+        }else{
+            st += `${Math.min(soiStrike,svolStrike)} (${Math.max(soiPct,svolPct)}%)`;
+        }
+    }
+
+    else{
+        st += `${soiStrike} (${soiPct}%)`;
+    }
+}
+
+else{
+    st += `${soiStrike} (${soiPct}%)`;
+}
+
+let shownSupportStrike = soiStrike;
+
+/* exact displayed strike */
+const matchS = st.match(/(\d+)/);
+if(matchS){
+    shownSupportStrike = Number(matchS[1]);
+}
+
+let sClass = "neutral";
+
+if (shownSupportStrike > sStrike) {
+    sClass = "up";
+}
+else if (shownSupportStrike < sStrike) {
+    sClass = "down";
+}
+else {
+    sClass = "neutral";
+}
+
+support_tendency.innerHTML =
+`<span class="${sClass}">${st}</span>`;
+
+
+/* RESISTANCE */
+resistance.innerHTML =
+(data.eor ?? "-") +
+"<div style='font-size:16px;color:#cbd5e1;margin-top:4px;'>( " +
+(data.resistance ?? "-") +
+" )</div>";
+
+resistance_type.innerText =
+data.resistance_type ?? "-";
+
+let rt = "> " + (data.resistance_tendency ?? "-") + " | ";
+
+const rStrike = Number(data.resistance ?? 0);
+
+const roiStrike = Number(data.resistance_second_oi_strike ?? 0);
+const rvolStrike = Number(data.resistance_second_vol_strike ?? 0);
+
+const roiPct = Number(data.resistance_oi_pct ?? 0);
+const rvolPct = Number(data.resistance_vol_pct ?? 0);
+
+const rType = data.resistance_type ?? "";
+const rTen  = data.resistance_tendency ?? "";
+
+if(rType === "OI"){
+    rt += `${roiStrike} (${roiPct}%)`;
+}
+
+else if(rType === "VOL"){
+    rt += `${rvolStrike} (${rvolPct}%)`;
+}
+
+else if(rType === "Both OI VOL"){
+
+    /* STRONG:
+       show strike having LOWER percent
+    */
+    if(rTen === "STRONG"){
+
+        if(roiPct <= rvolPct){
+            rt += `${roiStrike} (${roiPct}%)`;
+        }else{
+            rt += `${rvolStrike} (${rvolPct}%)`;
+        }
+    }
+
+    /* UP:
+       show only strike ABOVE resistance
+       choose higher %
+    */
+    else if(rTen === "UP"){
+
+        let picks = [];
+
+        if(roiStrike > rStrike) picks.push({s:roiStrike,p:roiPct});
+        if(rvolStrike > rStrike) picks.push({s:rvolStrike,p:rvolPct});
+
+        if(picks.length){
+            picks.sort((a,b)=>b.p-a.p);
+            rt += `${picks[0].s} (${picks[0].p}%)`;
+        }else{
+            rt += `${Math.max(roiStrike,rvolStrike)} (${Math.max(roiPct,rvolPct)}%)`;
+        }
+    }
+
+    /* DOWN:
+       show only strike BELOW resistance
+       choose higher %
+    */
+    else if(rTen === "DOWN"){
+
+        let picks = [];
+
+        if(roiStrike < rStrike) picks.push({s:roiStrike,p:roiPct});
+        if(rvolStrike < rStrike) picks.push({s:rvolStrike,p:rvolPct});
+
+        if(picks.length){
+            picks.sort((a,b)=>b.p-a.p);
+            rt += `${picks[0].s} (${picks[0].p}%)`;
+        }else{
+            rt += `${Math.min(roiStrike,rvolStrike)} (${Math.max(roiPct,rvolPct)}%)`;
+        }
+    }
+
+    else{
+        rt += `${roiStrike} (${roiPct}%)`;
+    }
+}
+
+else{
+    rt += `${roiStrike} (${roiPct}%)`;
+}
+
+let shownResistanceStrike = roiStrike;
+
+/* exact displayed strike */
+const matchR = rt.match(/(\d+)/);
+if(matchR){
+    shownResistanceStrike = Number(matchR[1]);
+}
+
+let rClass = "neutral";
+
+if (shownResistanceStrike > rStrike) {
+    rClass = "up";
+}
+else if (shownResistanceStrike < rStrike) {
+    rClass = "down";
+}
+else {
+    rClass = "neutral";
+}
+
+resistance_tendency.innerHTML =
+`<span class="${rClass}">${rt}</span>`;
+
+/* OI */
+put_writers_percent.innerText=data.put_writers_percent??"-";
+
+
+put_writers_trend.innerText = ` (${data.put_writers_delta>=0?'+':''}${data.put_writers_delta || 0}%)`;
+put_writers_trend.className = data.put_writers_delta>0 ? 'up' : data.put_writers_delta<0 ? 'down' : 'strong';
+
+call_writers_percent.innerText=data.call_writers_percent??"-";
+
+call_writers_trend.innerText = ` (${data.call_writers_delta>=0?'+':''}${data.call_writers_delta || 0}%)`;
+call_writers_trend.className = data.call_writers_delta>0 ? 'up' : data.call_writers_delta<0 ? 'down' : 'strong';
+
+put_writers_bar.style.width=(Number(data.put_writers_percent)||0)+"%";
+call_writers_bar.style.width=(Number(data.call_writers_percent)||0)+"%";
+
+const currBias = data.net_bias ?? "-";
+
+net_bias.innerText = currBias;
+
+/* strength */
+const bs = Number(data.bias_strength ?? 50);
+
+bias_strength.innerText = bs;
+
+if(currBias === "Bullish"){
+    bias_strength.className = "up";
+}
+else if(currBias === "Bearish"){
+    bias_strength.className = "down";
+}
+else{
+    bias_strength.className = "strong";
+}
+
+/* flip detect */
+if(
+    prevBias &&
+    prevBias !== currBias &&
+    currBias !== "Mixed"
+){
+    flipTime = new Date();
+    flipFrom = prevBias;
+}
+
+/* flip timer text */
+if(flipTime){
+
+    const mins =
+    Math.floor((new Date() - flipTime)/60000);
+
+
+    bias_flip_msg.innerText =
+    "⚡ Flipped from " +
+    flipFrom +
+    " " +
+    mins +
+    " mins ago";
+
+    bias_flip_msg.className =
+    "small " +
+    (currBias === "Bullish" ? "up" : "down");
+}
+else{
+    bias_flip_msg.innerText = "";
+}
+
+if(currBias !== "Mixed"){
+    prevBias = currBias;
+}
+trade_mode_box.innerText =
+"MODE: " + (data.trade_mode || "-");
+
+spot_confirm_box.innerText =
+"CONFIRM: " + (data.spot_confirm || "-");
+
+entry_conf_box.innerText =
+"ENTRY CONFIDENCE: " + (data.entry_conf || "-") + "%";
+trade_mode_box.className =
+"small " +
+(
+data.trade_mode==="CALL BIAS" ? "up" :
+data.trade_mode==="PUT BIAS" ? "down" :
+"strong"
+);
+
+entry_conf_box.className =
+"small " +
+(
+data.entry_conf >= 75 ? "up" :
+data.entry_conf >= 55 ? "strong" :
+"down"
+);
+
+spot_confirm_box.className = "small strong";
+
+
+let eorShift = `${data.eor_delta>=0?'+':''}${data.eor_delta || 0}`;
+let eosShift = `${data.eos_delta>=0?'+':''}${data.eos_delta || 0}`;
+
+function colorPts(v){
+ const n = Number(v);
+ if(n>0) return `<span style="color:#22c55e;">${v}</span>`;
+ if(n<0) return `<span style="color:#ef4444;">${v}</span>`;
+ return `<span style="color:#ffffff;">${v}</span>`;
+}
+
+eorShift = colorPts(eorShift);
+eosShift = colorPts(eosShift);
+
+/* LADDER */
+const ladder = [
+
+{
+label:"Today's upper limit",
+value:Number(data.eor_plus_1),
+type:"res"
+},
+
+{
+label:`RESISTANCE (${data.resistance_tendency ?? "-"} | ${eorShift})`,
+value:Number(data.eor),
+type:"res"
+},
+
+{
+label:"R-diversion",
+value:Number(data.eor_minus_1),
+type:"res"
+},
+
+{
+label:"S-diversion",
+value:Number(data.eos_plus_1),
+type:"sup"
+},
+
+{
+label:`SUPPORT (${data.support_tendency ?? "-"} | ${eosShift})`,
+value:Number(data.eos),
+type:"sup"
+},
+
+{
+label:"Today's lower limit",
+value:Number(data.eos_minus_1),
+type:"sup"
+},
+
+{
+label:`SPOT (${data.spot_delta>=0?'+':''}${data.spot_delta || 0})`,
+value:Number(data.spot),
+type:"spot"
+}
+
+];
+ladder.sort((a,b)=>b.value-a.value);
+
+let ladderHtml="";
+
+ladder.forEach(x=>{
+
+let cls="level-row ";
+
+if(x.type==="res") cls+="res-row";
+if(x.type==="sup") cls+="sup-row";
+if(x.type==="spot") cls+="spot-row";
+
+const diff = Math.round(x.value - Number(data.spot));
+
+let diffTxt = "";
+
+if(x.type !== "spot"){
+
+diffTxt =
+diff > 0
+? ` (+${diff})`
+: diff < 0
+? ` (${diff})`
+: ` (0)`;
+
+}
+
+/* Brightness based on distance */
+let dist = Math.abs(diff);
+
+let opacity = 1;
+
+if(dist <= 25) opacity = 1.00;
+else if(dist <= 50) opacity = 0.90;
+else if(dist <= 100) opacity = 0.78;
+else if(dist <= 150) opacity = 0.65;
+else opacity = 0.50;
+
+ladderHtml += `
+<div class="${cls}" style="opacity:${opacity};">
+<span>${x.type==="spot"?"● ":""}${x.label}</span>
+<span>${x.value}${diffTxt}</span>
+</div>
+`;
+
+});
+
+ladder_box.innerHTML=ladderHtml;
+/* SMART STRIP */
+
+const d = Number(data.smart_level_dist || 0);
+
+smart_level.innerHTML =
+`<b>${data.smart_level_name}</b><br>
+${data.smart_level_value} (${d>=0?'+':''}${d})`;
+
+
+smart_conf.innerText =
+`${data.smart_conf}%`;
+
+smart_break.innerText =
+`${data.smart_break}%`;
+
+if(String(data.smart_level_name).includes("RESISTANCE"))
+smart_break_head.innerText = "UP BREAK%";
+
+else if(String(data.smart_level_name).includes("SUPPORT"))
+smart_break_head.innerText = "DOWN BREAK%";
+
+else
+smart_break_head.innerText = "BREAK%";
+
+smart_action.innerText =
+data.smart_action;
+
+/* CONF COLOR */
+smart_conf.className =
+data.smart_conf >= 75 ? "up" :
+data.smart_conf >= 55 ? "strong" :
+"down";
+
+/* BREAK COLOR */
+smart_break.className =
+data.smart_break >= 65 ? "up" :
+data.smart_break <= 35 ? "down" :
+"strong";
+
+/* ACTION COLOR */
+if(data.smart_action==="BREAK↑")
+smart_action.className="up";
+
+else if(data.smart_action==="BREAK↓")
+smart_action.className="down";
+
+else if(data.smart_action==="HOLD")
+smart_action.className="strong";
+
+else
+smart_action.className="";
+
+/* CHARTS */
+updateCharts(data);
+loadSignals();
+
+/* TABLE */
+let tableHtml="";
+
+(data.rows||[]).forEach(row=>{
+
+let cls=row["Strike"]==data.atm?"atm":"";
+
+tableHtml+=`
+<tr class="${cls}">
+<td>${row["CE LTP"]}</td>
+<td>${row["CE IV"]}</td>
+<td>${row["CE EXT"]}</td>
+<td>${row["CE Delta"]}</td>
+<td>${row["CE CHG OI"]}</td>
+<td>${row["CE VOL"]}</td>
+<td>${row["CE OI"]}</td>
+<td>${row["Strike"]}</td>
+<td>${row["PE OI"]}</td>
+<td>${row["PE VOL"]}</td>
+<td>${row["PE CHG OI"]}</td>
+<td>${row["PE Delta"]}</td>
+<td>${row["PE EXT"]}</td>
+<td>${row["PE IV"]}</td>
+<td>${row["PE LTP"]}</td>
+</tr>
+`;
+
+});
+
+tbody.innerHTML=tableHtml;
+updateCharts(data);
+
+}
+catch(err){
+console.log(err);
+isOffline=true;
+net_status_banner.style.display="block";
+}
+}
+
+buildLabels();
+initChart1();
+loadHistory().then(()=>loadData());
+window.addEventListener("offline",()=>{
+
+isOffline = true;
+net_status_banner.style.display = "block";
+
+});
+
+window.addEventListener("online",()=>{
+
+net_status_banner.style.display = "none";
+isOffline = false;
+loadData();
+
+});
+setInterval(loadData,30000);
+
+</script>
+</body>
+
+</html>
